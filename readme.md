@@ -4,7 +4,7 @@
 ### Run:  `make run-kitchen`
 
 - use htttp -> to make orders
-    + POST:  http://localhost:8000/orders
+    + POST:  http://localhost:1000/create-order
     + Payload: {"CustomerID" : 1,"ProductID": 2,"Quantity": 3}
 
 - user http -> to get order from kitchen

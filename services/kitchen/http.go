@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -51,8 +52,27 @@ func (h *HttpServer) Run() error {
 		if err := t.Execute(w, res.GetOrders()); err != nil {
 			fmt.Printf("Template error: %v", err)
 		}
+	})
 
-		// json.NewEncoder(w).Encode(orderDb)
+	router.HandleFunc("/create-order", func(w http.ResponseWriter, r *http.Request) {
+		c := orders.NewOrderServiceClient(conn)
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second*2)
+		defer cancel()
+
+		var input orders.CreateOrderRequest
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res, err := c.CreateOrder(ctx, &input)
+
+		if err != nil {
+			fmt.Printf("Client error %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(res)
 	})
 
 	fmt.Println("Starting http server on ", h.addr)
